@@ -57,12 +57,11 @@ measure(M, F, A) ->
 
 -spec trace(atom()) -> ok.
 trace(Name) when is_atom(Name) ->
-  Pid = whereis(Name),
-  [{registered_name, RegisteredName}] = process_info(Pid, registered_name),
-  trace(RegisteredName, Pid),
+  trace(Name, erlang:whereis(Name)),
   ok.
 
 -spec trace(term(), pid()) -> ok.
+trace(_, undefined) -> notok;
 trace(Name, Pid) when is_pid(Pid) ->
   toolbox_monitor_sup:trace_process(Name, Pid),
   ok.

@@ -16,10 +16,10 @@
 %%%===================================================================
 
 -spec start_link(atom(), pid()) -> {ok, pid()}.
-start_link(Name, Pid) ->
+start_link(Name, Pid) when is_atom(Name) andalso is_pid(Pid) ->
   case process_info(Pid) of
     undefined -> {error, notfound};
-    _ -> gen_server:start_link({local, Name}, ?MODULE, {Name, Pid}, [])
+    _ -> gen_server:start_link({local, monitor_name(Name)}, ?MODULE, {Name, Pid}, [])
   end.
 
 %%%===================================================================
@@ -70,3 +70,6 @@ code_change(_OldVsn, Pid, _Extra) ->
 %%% Internal functions
 %%%===================================================================
 
+-spec monitor_name(atom()) -> atom().
+monitor_name(Name) when is_atom(Name) ->
+  list_to_atom("toolbox_monitor_" ++ atom_to_list(Name)).

@@ -17,7 +17,10 @@ start_link() ->
 init([]) ->
   lager:info("Starting ~p...", [?MODULE]),
   Children = [
-    ?CHILD(toolbox_node_stats),
     ?CHILD(toolbox_monitor_sup)
   ],
-  {ok, {{one_for_one, 5, 1}, Children}}.
+  FinalChildren = case application:get_env(toolbox, enable_node_stats, false) of
+    true -> [?CHILD(toolbox_node_stats) | Children];
+    false -> Children
+  end,
+  {ok, {{one_for_one, 5, 1}, FinalChildren}}.
