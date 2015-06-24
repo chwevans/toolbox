@@ -4,6 +4,7 @@
 
 %% API
 -export([
+  stop/1
 ]).
 
 %% gen_server callbacks
@@ -21,6 +22,10 @@ start_link(Name, Pid) when is_atom(Name) andalso is_pid(Pid) ->
     undefined -> {error, notfound};
     _ -> gen_server:start_link({local, monitor_name(Name)}, ?MODULE, {Name, Pid}, [])
   end.
+
+-spec stop(atom()) -> ok.
+stop(Name) ->
+  whereis(monitor_name(Name)) ! stop.
 
 %%%===================================================================
 %%% gen_server callbacks
@@ -53,13 +58,17 @@ handle_info(timeout, State = #{name := Name, pid := Pid, last := Last}) ->
   apply(toolbox:metrics_fun(), [Name, Diff]),
   {noreply, State#{last => Next}, ?TIMEOUT};
 
+handle_info(stop, State) ->
+  {stop, normal, State};
+
 handle_info(Msg, State = #{name := Name}) ->
   lager:info("Unexpected info(~p): ~p", [Name, Msg]),
   {stop, normal, State}.
 
 -spec terminate(term(), map()) -> ok.
-terminate(_Reason, #{pid := _Pid}) ->
-  supervisor:terminate_child(toolbox_sup, self()),
+terminate(Reason, #{name := Name, pid := _Pid}) ->
+  lager:info("Terminating: ~p for ~p", [Reason, Name]),
+  supervisor:terminate_child(toolbox_monitor_sup, self()),
   ok.
 
 -spec code_change(term(), map(), term()) -> {ok, map()}.

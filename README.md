@@ -21,6 +21,11 @@ toolbox:trace(Name, Pid)
 toolbox:trace(RegisteredName)
 ```
 
+* Stop tracing a process
+```
+toolbox:untrace(Name)
+```
+
 ## Configuration
 * Metrics function (metrics_fun): Module and function that represents a 2 arity function taking the name and relevant statistics in the form of a map:
 ```-spec log(atom(), map()) -> ok.```

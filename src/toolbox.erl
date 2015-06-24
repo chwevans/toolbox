@@ -11,6 +11,7 @@
 -export([
   trace/1,
   trace/2,
+  untrace/1,
   measure/2,
   measure/3,
   log/2
@@ -54,6 +55,11 @@ measure(M, F, A) ->
   EndMetrics = get_metrics(self()),
   apply(metrics_fun(), [{M, F}, maps:merge(#{time => Time}, diff_metrics(StartMetrics, EndMetrics))]),
   R.
+
+-spec untrace(atom()) -> ok.
+untrace(Name) ->
+  toolbox_monitor:stop(Name),
+  ok.
 
 -spec trace(atom()) -> ok.
 trace(Name) when is_atom(Name) ->
